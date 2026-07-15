@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sarabun);
+  --font-sarabun: var(--font-sarabun);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sarabun), sans-serif;
+}
+
+/* A4 sheet — 210mm wide, print-faithful to FM-HR-03.
+   Word margins: L/R 0.5in (12.7mm), top 1in, bottom 0.5in. */
+.sheet {
+  width: 210mm;
+  min-height: 297mm;
+  box-sizing: border-box;
+  padding: 14mm 12.7mm 12mm;
+}
+
+@media (max-width: 800px) {
+  .sheet {
+    width: 100%;
+    min-height: 0;
+    padding: 16px 14px;
+  }
+}
+
+/* Square outline check/radio boxes, matching the paper form's ☐ glyphs */
+.sqbox {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: 0 0 auto;
+  border: 1.3px solid #404040;
+  border-radius: 0;
+  background: #fff;
+  position: relative;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.sqbox:checked {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+.sqbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 3.5px;
+  height: 7px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Horizontal-scroll wrapper so wide tables stay usable on mobile */
+.table-scroll {
+  overflow-x: auto;
+}
+.table-scroll > table {
+  min-width: 640px;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm 12mm;
+  }
+  html,
+  body {
+    background: white;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .sheet {
+    width: 100%;
+    min-height: 0;
+    padding: 0;
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+  /* Keep the color of section bars and filled check boxes when printing */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Keep the letterhead and individual rows intact; let tall tables flow
+     across pages at row boundaries (the header repeats automatically). */
+  header,
+  thead,
+  tr {
+    break-inside: avoid;
+  }
+  /* A section title should never be the last thing on a page */
+  .section-bar {
+    break-after: avoid;
+  }
+  .table-scroll {
+    overflow: visible !important;
+  }
+  .table-scroll > table {
+    min-width: 0 !important;
+  }
+}
