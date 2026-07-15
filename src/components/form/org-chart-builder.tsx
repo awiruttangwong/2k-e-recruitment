@@ -211,12 +211,16 @@ export function OrgChartBuilder({
                 draggable={false}
                 className="pointer-events-none h-full w-full"
               />
+              {/* Delete affordance. On touch devices (no hover) it must stay
+                  visible — otherwise the node can never be removed individually
+                  (only "ล้างทั้งหมด"). On hover-capable pointers (desktop) it
+                  hides until the node is hovered, keeping the frame tidy. */}
               <button
                 type="button"
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={() => removeNode(node.id)}
                 aria-label={`ลบ ${icon.label}`}
-                className="no-print absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[12px] leading-none text-white opacity-0 shadow transition group-hover:opacity-100"
+                className="no-print absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-[14px] leading-none text-white shadow transition-opacity opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
               >
                 ×
               </button>

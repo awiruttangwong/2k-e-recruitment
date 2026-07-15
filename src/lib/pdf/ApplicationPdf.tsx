@@ -216,7 +216,11 @@ export function ApplicationPdf({ data, orgChart }: { data: ApplicationFormValues
           <Field label="หญิง" value={txt(data.numberOfSisters)} suffix="คน" width="15%" />
           <Field label="เป็นบุตรคนที่" value={txt(data.childOrder)} width="18%" />
         </View>
-        <View style={styles.table} wrap={false}>
+        {/* Extra top margin (on top of styles.table's own marginTop:2) — unlike
+            the other tables, this one follows plain inline fields (not a
+            Section bar with its own spacing), so it sat cramped right under
+            the row above without it. */}
+        <View style={[styles.table, { marginTop: 20 }]} wrap={false}>
           <TableHeader cols={[{ label: "ชื่อ / Name", flex: 2 }, { label: "อายุ (ปี) / Age", flex: 1 }, { label: "อาชีพ / Occupation", flex: 2 }]} />
           {siblings.map((r, i) => (
             <View key={i} style={[styles.tr, i < siblings.length - 1 ? styles.trBottom : {}]} wrap={false}>
@@ -524,6 +528,14 @@ export function ApplicationPdf({ data, orgChart }: { data: ApplicationFormValues
           </View>
         </View>
 
+        {/* Two EQUAL flexGrow spacers (before and after the signature block)
+            split whatever room is left on this page evenly, centering the
+            signature block vertically in that leftover space — not flush
+            against the bottom edge (the org-chart section right after this
+            always starts a fresh page via `break`, so this signature block
+            is always the last content on its page). */}
+        <View style={{ flexGrow: 1 }} />
+
         {/* Centered applicant-signature line — matches the frontend's
             "ลายมือชื่อผู้สมัคร" block, bound to the same signatureDataUrl field as
             the right-aligned ลงชื่อ/วันที่ block near the end of the page.
@@ -536,10 +548,14 @@ export function ApplicationPdf({ data, orgChart }: { data: ApplicationFormValues
           <Text style={{ fontSize: 7, fontStyle: "italic", color: "#a3a3a3", marginTop: 2 }}>{pad("Applicant's signature")}</Text>
         </View>
 
-        {/* Org chart (vector) — marginTop mirrors the frontend's mt-8 so the
-            heading is clearly separated from the signature block above it
-            (they were cramped/overlapping before). */}
-        <View style={{ marginTop: 22 }} wrap={false}>
+        <View style={{ flexGrow: 1 }} />
+
+        {/* Org chart (vector) — forced onto its own fresh page (react-pdf's
+            `break` prop = hard page-break BEFORE this element) so the chart,
+            job responsibilities, and final signature form one clean,
+            uncrowded page instead of trailing off the bottom of whatever
+            page the certification happened to land on. */}
+        <View break style={{ marginTop: 6 }} wrap={false}>
           <Text style={styles.paragraphLabel}>{pad("ผังโครงสร้างองค์กรหรือแผนก (ที่ทำงานล่าสุด)")}</Text>
           {hasOrgChart ? (
             <View style={{ marginTop: 3 }}>

@@ -251,7 +251,17 @@ export default function ApplyPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "ใบสมัครงาน-2K-Logistics.pdf";
+      // Once ชื่อ/นามสกุล/ตำแหน่งที่ต้องการ are all filled in, name the file
+      // after the applicant instead of the generic default — makes multiple
+      // downloaded applications easy to tell apart in a folder.
+      const sanitize = (s: string) => s.trim().replace(/[\\/:*?"<>|]/g, "");
+      const firstName = sanitize(values.firstName ?? "");
+      const lastName = sanitize(values.lastName ?? "");
+      const position = sanitize(values.positionApplied1 ?? "");
+      a.download =
+        firstName && lastName && position
+          ? `${firstName}-${lastName}-${position}.pdf`
+          : "ใบสมัครงาน-2K-Logistics.pdf";
       document.body.appendChild(a);
       a.click();
       a.remove();

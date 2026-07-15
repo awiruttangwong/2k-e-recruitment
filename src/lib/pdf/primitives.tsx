@@ -33,16 +33,29 @@ export const styles = StyleSheet.create({
   companyName: { fontSize: 11, fontWeight: "bold" },
   companyAddress: { fontSize: 8, color: "#404040", marginTop: 4 },
   formTitleTh: { fontSize: 13, fontWeight: "bold", marginTop: 4 },
-  formTitleEn: { fontSize: 8.5, fontStyle: "italic", color: "#404040" },
+  formTitleEn: { fontSize: 8.5, fontStyle: "normal", color: "#404040", marginTop: 4 },
   photoBox: { width: "25mm", height: "35mm", borderWidth: 1, borderColor: "#262626", alignItems: "center", justifyContent: "center" },
   photoBoxText: { fontSize: 6.5, color: "#a3a3a3", textAlign: "center" },
 
-  // Section divider — "English (Thai)" on a shaded bar
+  // Section divider — "English (Thai)" on a shaded bar. All 7 section bars
+  // (Personal/Family/Education/Training/Work Experience/Language/Special
+  // Ability) share this ONE style object, so background + both border rules
+  // are guaranteed identical across every section — never fork per-section
+  // overrides for these three properties.
   sectionBar: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#f7f7f7",
+    // 0.75pt (not 0.5pt) is deliberate: at 0.5pt, whichever fractional-point
+    // Y position a given bar happens to land at (a side effect of how much
+    // variable-height content precedes it) pushed the rasterized border
+    // across a different number of anti-aliased pixel rows for some
+    // sections (Work Experience / Language Ability rendered ~1px "blurrier"
+    // than the other 5, even though every bar uses this exact same style
+    // object) — a sub-pixel rendering artifact, not a style difference. The
+    // thicker line is far less sensitive to that sub-pixel offset, so every
+    // bar reads uniformly crisp regardless of its exact page position.
     borderTopWidth: 0.75,
     borderBottomWidth: 0.75,
-    borderColor: "#525252",
+    borderColor: "#737373",
     paddingVertical: 3,
     paddingHorizontal: 4,
     // Larger top margin than the ~5pt row gap → sections read as a clear tier
@@ -74,15 +87,20 @@ export const styles = StyleSheet.create({
   checkTick: { fontSize: 7, color: "#ffffff", fontWeight: "bold", lineHeight: 1 },
   checkText: { fontSize: 9 },
 
-  // Tables
-  table: { borderWidth: 0.75, borderColor: "#404040", marginBottom: 6, marginTop: 2 },
+  // Tables — every border, outer frame AND every internal gridline (header
+  // divider, column rules, row rules), uses the SAME black color AND the
+  // SAME width (0.6pt) across every data table (Siblings, Education,
+  // Training, Work Experience, Language Ability, References). No more
+  // "thicker outer / thinner inner" distinction — fully uniform per the
+  // owner's explicit request.
+  table: { borderWidth: 0.6, borderColor: "#000000", marginBottom: 6, marginTop: 2 },
   tr: { flexDirection: "row" },
-  th: { fontSize: 7, fontWeight: "bold", padding: 3, borderRightWidth: 0.6, borderBottomWidth: 0.75, borderColor: "#404040", textAlign: "center" },
+  th: { fontSize: 7, fontWeight: "bold", padding: 3, borderRightWidth: 0.6, borderBottomWidth: 0.6, borderColor: "#000000", textAlign: "center" },
   thLast: { borderRightWidth: 0 },
-  td: { fontSize: 8.5, paddingVertical: 3, paddingHorizontal: 3, borderRightWidth: 0.6, borderColor: "#404040", minHeight: 15, justifyContent: "center" },
+  td: { fontSize: 8.5, paddingVertical: 3, paddingHorizontal: 3, borderRightWidth: 0.6, borderColor: "#000000", minHeight: 15, justifyContent: "center" },
   tdText: { fontSize: 8.5 },
   tdLast: { borderRightWidth: 0 },
-  trBottom: { borderBottomWidth: 0.6, borderColor: "#404040" },
+  trBottom: { borderBottomWidth: 0.6, borderColor: "#000000" },
 
   paragraphLabel: { fontSize: 9, marginTop: 4 },
   paragraphLabelEn: { fontSize: 7, fontStyle: "italic", color: "#a3a3a3" },
