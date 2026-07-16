@@ -80,9 +80,12 @@ function CornerLogo() {
   );
 }
 
+/** `fixed` re-renders the header on every page its table spans, so a table
+ *  that breaks mid-way still starts the next page with column labels instead
+ *  of bare rows. It repeats only across the parent table's own pages. */
 function TableHeader({ cols }: { cols: { label: string; flex: number }[] }) {
   return (
-    <View style={styles.tr} wrap={false}>
+    <View style={styles.tr} wrap={false} fixed>
       {cols.map((c, i) => (
         <Text key={i} style={[styles.th, { flex: c.flex }, i === cols.length - 1 ? styles.thLast : {}]}>
           {pad(c.label)}
@@ -93,7 +96,6 @@ function TableHeader({ cols }: { cols: { label: string; flex: number }[] }) {
 }
 
 export function ApplicationPdf({ data, orgChart }: { data: ApplicationFormValues; orgChart?: OrgChartPayload | null }) {
-  const siblings = data.siblings ?? [];
   const education = data.education ?? [];
   const trainings = data.trainings ?? [];
   const workExperience = data.workExperience ?? [];
@@ -223,21 +225,6 @@ export function ApplicationPdf({ data, orgChart }: { data: ApplicationFormValues
           <Field label="หญิง" value={txt(data.numberOfSisters)} suffix="คน" width="15%" />
           <Field label="เป็นบุตรคนที่" value={txt(data.childOrder)} width="18%" />
         </View>
-        {/* Extra top margin (on top of styles.table's own marginTop:2) — unlike
-            the other tables, this one follows plain inline fields (not a
-            Section bar with its own spacing), so it sat cramped right under
-            the row above without it. */}
-        <View style={[styles.table, { marginTop: 20 }]} wrap={false}>
-          <TableHeader cols={[{ label: "ชื่อ / Name", flex: 2 }, { label: "อายุ (ปี) / Age", flex: 1 }, { label: "อาชีพ / Occupation", flex: 2 }]} />
-          {siblings.map((r, i) => (
-            <View key={i} style={[styles.tr, i < siblings.length - 1 ? styles.trBottom : {}]} wrap={false}>
-              <Text style={[styles.td, { flex: 2 }]}>{txt(r.name)}</Text>
-              <Text style={[styles.td, { flex: 1, textAlign: "center" }]}>{txt(r.age)}</Text>
-              <Text style={[styles.td, styles.tdLast, { flex: 2 }]}>{txt(r.occupation)}</Text>
-            </View>
-          ))}
-        </View>
-
         {/* Education */}
         <View wrap={false}>
         <Section en="Education" th="การศึกษา" />
@@ -490,8 +477,12 @@ export function ApplicationPdf({ data, orgChart }: { data: ApplicationFormValues
           <Field label="ญาติ/เพื่อนที่ทำงานในบริษัทฯ" value={data.relativesInCompany} />
         </View>
 
-        {/* References */}
-        <View wrap={false}>
+        {/* References — `break` starts a fresh page for this block. On a
+            lightly filled form it would otherwise land at the tail of the
+            preceding page and crowd it; on a heavily filled one it already
+            falls on its own page, so the rule costs nothing there. Owner's
+            call: a roomier page is preferred over squeezing this block in. */}
+        <View break wrap={false}>
         <Text style={styles.paragraphLabel}>{pad("บุคคลอ้างอิง 2 คน (ไม่ใช่ญาติหรือนายจ้างเดิม)")}</Text>
         <View style={styles.table}>
           <TableHeader
@@ -519,50 +510,12 @@ export function ApplicationPdf({ data, orgChart }: { data: ApplicationFormValues
           <Text style={styles.paragraphBox}>{pad(data.selfIntroduction)}</Text>
         </View>
 
-        {/* Certification */}
-        <View style={{ marginTop: 8, borderTopWidth: 0.6, borderColor: "#a3a3a3", paddingTop: 6 }} wrap={false}>
-          <Text style={styles.certifyTh}>
-            ข้าพเจ้าขอรับรองว่า ข้อความดังกล่าวทั้งหมดในใบสมัครนี้เป็นความจริงทุกประการ หลังจากบริษัทจ้างเข้ามาทำงานแล้วปรากฏว่า
-            ข้อความในใบสมัครงาน เอกสารที่นำมาแสดง หรือรายละเอียดที่ให้ไว้ไม่เป็นความจริง บริษัทฯ
-            มีสิทธิ์ที่จะเลิกจ้างข้าพเจ้าได้โดยไม่ต้องจ่ายเงินชดเชยหรือค่าเสียหายใดๆ ทั้งสิ้น{" "}
-          </Text>
-          <Text style={styles.certifyEn}>
-            I certify all statement given in this application form is true. The Company has the right to terminate my employment
-            without any compensation if any is found to be untrue after engagement.{" "}
-          </Text>
-          <View style={[styles.checkRow, { marginTop: 4 }]}>
-            <Check label="ข้าพเจ้ารับทราบและยอมรับเงื่อนไขข้างต้น" checked={!!data.consentTruthful} />
-          </View>
-        </View>
-
-        {/* Two EQUAL flexGrow spacers (before and after the signature block)
-            split whatever room is left on this page evenly, centering the
-            signature block vertically in that leftover space — not flush
-            against the bottom edge (the org-chart section right after this
-            always starts a fresh page via `break`, so this signature block
-            is always the last content on its page). */}
-        <View style={{ flexGrow: 1 }} />
-
-        {/* Centered applicant-signature line — matches the frontend's
-            "ลายมือชื่อผู้สมัคร" block, bound to the same signatureDataUrl field as
-            the right-aligned ลงชื่อ/วันที่ block near the end of the page.
-            marginTop mirrors the frontend's mt-4 gap below the consent box. */}
-        <View style={{ marginTop: 16, alignItems: "center" }} wrap={false}>
-          <Text style={{ fontSize: 9 }}>{pad("ลายมือชื่อผู้สมัคร")}</Text>
-          <View style={{ width: "100%", marginTop: 4, borderBottomWidth: 0.6, borderStyle: "dotted", borderColor: "#a3a3a3", paddingBottom: 2 }}>
-            <Text style={{ fontSize: 9, textAlign: "center" }}>{pad(data.signatureDataUrl)}</Text>
-          </View>
-          <Text style={{ fontSize: 7, fontStyle: "italic", color: "#a3a3a3", marginTop: 2 }}>{pad("Applicant's signature")}</Text>
-        </View>
-
-        <View style={{ flexGrow: 1 }} />
-
-        {/* Org chart (vector) — forced onto its own fresh page (react-pdf's
-            `break` prop = hard page-break BEFORE this element) so the chart,
-            job responsibilities, and final signature form one clean,
-            uncrowded page instead of trailing off the bottom of whatever
-            page the certification happened to land on. */}
-        <View break style={{ marginTop: 6 }} wrap={false}>
+        {/* Org chart (vector) — flows into whatever room is left on the
+            current page rather than forcing a fresh one, which used to leave
+            the preceding page ~3/4 empty. `wrap={false}` still keeps the
+            chart whole: react-pdf moves it to the next page by itself when it
+            no longer fits, so it is never split down the middle. */}
+        <View style={{ marginTop: 6 }} wrap={false}>
           <Text style={styles.paragraphLabel}>{pad("ผังโครงสร้างองค์กรหรือแผนก (ที่ทำงานล่าสุด)")}</Text>
           {hasOrgChart ? (
             <View style={{ marginTop: 3 }}>
@@ -577,6 +530,22 @@ export function ApplicationPdf({ data, orgChart }: { data: ApplicationFormValues
         <View wrap={false}>
           <Text style={styles.paragraphLabel}>{pad("หน้าที่รับผิดชอบโดยละเอียด (ที่ทำงานล่าสุด)")}</Text>
           <Text style={styles.paragraphBox}>{pad(data.jobResponsibilities)}</Text>
+        </View>
+
+        {/* Certification */}
+        <View style={{ marginTop: 8, borderTopWidth: 0.6, borderColor: "#a3a3a3", paddingTop: 6 }} wrap={false}>
+          <Text style={styles.certifyTh}>
+            ข้าพเจ้าขอรับรองว่า ข้อความดังกล่าวทั้งหมดในใบสมัครนี้เป็นความจริงทุกประการ หลังจากบริษัทจ้างเข้ามาทำงานแล้วปรากฏว่า
+            ข้อความในใบสมัครงาน เอกสารที่นำมาแสดง หรือรายละเอียดที่ให้ไว้ไม่เป็นความจริง บริษัทฯ
+            มีสิทธิ์ที่จะเลิกจ้างข้าพเจ้าได้โดยไม่ต้องจ่ายเงินชดเชยหรือค่าเสียหายใดๆ ทั้งสิ้น{" "}
+          </Text>
+          <Text style={styles.certifyEn}>
+            I certify all statement given in this application form is true. The Company has the right to terminate my employment
+            without any compensation if any is found to be untrue after engagement.{" "}
+          </Text>
+          <View style={[styles.checkRow, { marginTop: 4 }]}>
+            <Check label="ข้าพเจ้ารับทราบและยอมรับเงื่อนไขข้างต้น" checked={!!data.consentTruthful} />
+          </View>
         </View>
 
         {/* Signature & date — right-aligned and STACKED vertically (ลงชื่อ on

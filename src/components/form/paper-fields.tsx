@@ -25,10 +25,12 @@ function useGroupOptionCheckbox(name: Path<ApplicationFormValues>, optionValue: 
 
 // min-w-0 is critical: it lets the underline input shrink to share a row with
 // its label instead of wrapping onto a new line when the column is narrow.
+// paper-line-input is a hook for the mobile rule in globals.css that pins these
+// inputs left below the sm breakpoint — see the comment there for why.
 const lineInputBase =
-  "min-w-0 flex-1 border-0 border-b bg-transparent px-1 py-0.5 text-[15px] leading-tight focus:outline-none";
+  "paper-line-input min-w-0 flex-1 border-0 border-b bg-transparent px-1 py-0.5 text-[15px] leading-tight focus:outline-none";
 const dateLineInputBase =
-  "min-w-0 flex-1 border-0 border-b bg-transparent px-1 py-0.5 text-[15px] leading-tight focus:outline-none";
+  "paper-line-input min-w-0 flex-1 border-0 border-b bg-transparent px-1 py-0.5 text-[15px] leading-tight focus:outline-none";
 
 /** Dotted underline normally; a solid red underline once the field has a validation error. */
 function borderStyle(hasError?: string) {

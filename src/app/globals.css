@@ -35,6 +35,22 @@ body {
   }
 }
 
+/* Below the sm breakpoint (640px) every grid collapses to a single full-width
+   column, so each label-value field spans the whole sheet. Values that are
+   center-aligned to look balanced inside the narrow DESKTOP grid columns (set
+   via inline text-align:center, and the dynamic left/center logic in
+   apply/page.tsx) would then float in the middle of a wide line, detached from
+   their left-hand label — the desktop/mobile mismatch. Pin every label-value
+   input left on phones so the value reads right after its label. !important is
+   needed to override the inline text-align:center some fields carry for the
+   desktop layout; the breakpoint is 639.98px (not the sheet's 800px) because
+   that is exactly where the grids actually collapse to one column. */
+@media (max-width: 639.98px) {
+  .paper-line-input {
+    text-align: left !important;
+  }
+}
+
 /* Square outline check/radio boxes, matching the paper form's ☐ glyphs */
 .sqbox {
   -webkit-appearance: none;

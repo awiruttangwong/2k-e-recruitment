@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useRef, useState, type ChangeEvent } from "react";
+import { Fragment, useRef, useState } from "react";
 import Image from "next/image";
 import { useForm, useFieldArray, FormProvider, type DefaultValues, type FieldErrors, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,7 +17,6 @@ const typedResolver = zodResolver(applicationFormSchema) as unknown as Resolver<
 
 const defaultValues: DefaultValues<ApplicationFormValues> = {
 
-  siblings: [{ name: "" }, { name: "" }, { name: "" }, { name: "" }],
   education: [
     { level: "high_school" },
     { level: "vocational" },
@@ -180,7 +179,6 @@ export default function ApplyPage() {
   const numberOfSistersValue = String(watch("numberOfSisters") ?? "");
   const childOrderValue = String(watch("childOrder") ?? "");
 
-  const siblingsArray = useFieldArray({ control, name: "siblings" });
   const educationArray = useFieldArray({ control, name: "education" });
   const trainingsArray = useFieldArray({ control, name: "trainings" });
   const workExperienceArray = useFieldArray({ control, name: "workExperience" });
@@ -216,18 +214,6 @@ export default function ApplyPage() {
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
     window.setTimeout(() => el.focus({ preventScroll: true }), 350);
-  };
-
-  // Strips non-digit characters as the user types, for numeric-only table cells.
-  const siblingAgeReg = (index: number) => {
-    const reg = register(`siblings.${index}.age` as const);
-    return {
-      ...reg,
-      onChange: (e: ChangeEvent<HTMLInputElement>) => {
-        e.target.value = e.target.value.replace(/[^0-9]/g, "");
-        return reg.onChange(e);
-      },
-    };
   };
 
   // "Download PDF" generates a true data-driven vector PDF via
@@ -519,37 +505,6 @@ export default function ApplyPage() {
               {...register("childOrder")} />
           </div>
 
-
-          <div className="table-scroll">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <th className={thCell}>ชื่อ / Name</th>
-                <th className={`${thCell} w-24`}>อายุ (ปี) / Age</th>
-                <th className={thCell}>อาชีพ / Occupation</th>
-              </tr>
-            </thead>
-            <tbody>
-              {siblingsArray.fields.map((field, index) => (
-                <tr key={field.id}>
-                  <td className={tdCell}><input className={cellInput} {...register(`siblings.${index}.name` as const)} /></td>
-                  <td className={tdCell}>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      className={`${cellInput} text-center`}
-                      {...siblingAgeReg(index)}
-                    />
-                  </td>
-                  <td className={tdCell}><input className={cellInput} {...register(`siblings.${index}.occupation` as const)} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-          <button type="button" onClick={() => siblingsArray.append({ name: "" })} className="no-print text-xs font-medium text-blue-600 hover:underline">
-            + เพิ่มแถว
-          </button>
 
           {/* ── Education ── */}
           <SectionBar en="Education" th="การศึกษา" />
@@ -883,6 +838,15 @@ export default function ApplyPage() {
 
           <PaperTextArea th="กรุณาแนะนำตัวท่านเอง เพื่อให้บริษัทรู้จักตัวท่านดีขึ้น" en="Please provide any further information about yourself which will allow our company to know you better" rows={4} {...register("selfIntroduction")} />
 
+          {/* ── Org chart & responsibilities (last-workplace) ── */}
+          <OrgChartBuilder
+            className="mt-8"
+            onPayloadChange={(payload) => {
+              orgChartPayloadRef.current = payload;
+            }}
+          />
+          <PaperTextArea th="จงอธิบายหน้าที่รับผิดชอบโดยละเอียด (ที่ทำงานล่าสุด)" rows={6} className="mt-4" {...register("jobResponsibilities")} />
+
           {/* ── Certification ── */}
           <div className="mt-3 border-t border-neutral-400 pt-2">
             <p className="text-[12px] leading-relaxed text-neutral-800">
@@ -899,26 +863,7 @@ export default function ApplyPage() {
               ข้าพเจ้ารับทราบและยอมรับเงื่อนไขข้างต้น
             </label>
             {errors.consentTruthful ? <p className="mt-1 text-[12px] text-red-600">{errors.consentTruthful.message}</p> : null}
-
-            <label className="mt-4 flex w-full flex-col items-center gap-1">
-              <span className="text-[15px]">ลายมือชื่อผู้สมัคร</span>
-              <input
-                className="w-full border-0 border-b-2 border-dotted border-neutral-300 bg-transparent px-1 py-0.5 text-center text-[15px] leading-tight focus:border-solid focus:border-blue-600 focus:outline-none"
-                placeholder="พิมพ์ชื่อ-นามสกุล แทนลายเซ็น"
-                {...register("signatureDataUrl")}
-              />
-              <span className="text-[10px] italic text-neutral-400">Applicant&apos;s signature</span>
-            </label>
           </div>
-
-          {/* ── Org chart & responsibilities (last-workplace) ── */}
-          <OrgChartBuilder
-            className="mt-8"
-            onPayloadChange={(payload) => {
-              orgChartPayloadRef.current = payload;
-            }}
-          />
-          <PaperTextArea th="จงอธิบายหน้าที่รับผิดชอบโดยละเอียด (ที่ทำงานล่าสุด)" rows={6} className="mt-4" {...register("jobResponsibilities")} />
 
           {/* ── Signature & Date — right-aligned, stacked, labels aligned ── */}
           <div className="mt-4 flex justify-end">

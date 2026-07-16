@@ -27,7 +27,7 @@ export const styles = StyleSheet.create({
   // Letterhead
   // No divider under the letterhead; marginBottom keeps the field block spaced
   // below it (page 1 only — the header doesn't render on later pages).
-  headerRow: { flexDirection: "row", alignItems: "flex-start", paddingBottom: 6, marginBottom: 24 },
+  headerRow: { flexDirection: "row", alignItems: "flex-start", paddingBottom: 4, marginBottom: 14 },
   logo: { width: 58, height: 35, marginTop: 2 },
   headerCenter: { flex: 1, alignItems: "center", paddingTop: 2 },
   companyName: { fontSize: 11, fontWeight: "bold" },
@@ -60,8 +60,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 4,
     // Larger top margin than the ~5pt row gap → sections read as a clear tier
     // in the vertical rhythm rather than sitting cramped against the block above.
-    marginTop: 16,
-    marginBottom: 6,
+    marginTop: 11,
+    marginBottom: 5,
     flexDirection: "row",
     alignItems: "baseline",
   },
@@ -87,20 +87,35 @@ export const styles = StyleSheet.create({
   checkTick: { fontSize: 7, color: "#ffffff", fontWeight: "bold", lineHeight: 1 },
   checkText: { fontSize: 9 },
 
-  // Tables — every border, outer frame AND every internal gridline (header
-  // divider, column rules, row rules), uses the SAME black color AND the
-  // SAME width (0.6pt) across every data table (Siblings, Education,
-  // Training, Work Experience, Language Ability, References). No more
-  // "thicker outer / thinner inner" distinction — fully uniform per the
-  // owner's explicit request.
-  table: { borderWidth: 0.6, borderColor: "#000000", marginBottom: 6, marginTop: 2 },
+  // Tables — every border (outer frame AND every internal gridline) is black
+  // and 0.75pt across every data table (Education, Training, Work Experience,
+  // Language Ability, References). Two rules keep the grid clean when a PDF
+  // viewer rasterises it at screen zoom, which is what caused the long-standing
+  // "some lines lighter, some darker, widths unequal, edges kinked" bug:
+  //   1. Width is 0.75pt, not a hairline 0.6pt. 0.6pt is 0.8 device-px at 96dpi
+  //      (screen zoom 100%): a sub-1px stroke lands between pixel rows and each
+  //      line anti-aliases to a *different* grey depending on its exact Y, so
+  //      lines look randomly lighter/darker and unequal in weight. 0.75pt is
+  //      exactly 1px at 96dpi, so every line is a solid pixel and they read
+  //      uniformly. (At print DPI even 0.6pt was already uniform — this is
+  //      purely a low-zoom screen-raster fix.) 0.75 (not 1.0) is deliberate:
+  //      1.0pt made the grid tall enough to push a full form onto a 4th page.
+  //   2. th and td share IDENTICAL box geometry (same paddings, same border
+  //      widths). When they differed (th had padding 2 / td had 3), Yoga
+  //      rounded each column edge slightly differently between the header row
+  //      and the body rows, so a column divider was offset ~0.7pt across the
+  //      header/body seam and looked kinked. Identical geometry ⇒ identical
+  //      rounding ⇒ dividers line up dead straight.
+  // paddingVertical is 1 (not 2): it claws back the vertical space the slightly
+  // thicker borders added, so pagination is unchanged from the 0.6pt version.
+  table: { borderWidth: 0.75, borderColor: "#000000", marginBottom: 6, marginTop: 2 },
   tr: { flexDirection: "row" },
-  th: { fontSize: 7, fontWeight: "bold", padding: 3, borderRightWidth: 0.6, borderBottomWidth: 0.6, borderColor: "#000000", textAlign: "center" },
+  th: { fontSize: 7, fontWeight: "bold", paddingVertical: 1, paddingHorizontal: 3, borderRightWidth: 0.75, borderBottomWidth: 0.75, borderColor: "#000000", textAlign: "center" },
   thLast: { borderRightWidth: 0 },
-  td: { fontSize: 8.5, paddingVertical: 3, paddingHorizontal: 3, borderRightWidth: 0.6, borderColor: "#000000", minHeight: 15, justifyContent: "center" },
+  td: { fontSize: 8.5, paddingVertical: 1, paddingHorizontal: 3, borderRightWidth: 0.75, borderColor: "#000000", minHeight: 15, justifyContent: "center" },
   tdText: { fontSize: 8.5 },
   tdLast: { borderRightWidth: 0 },
-  trBottom: { borderBottomWidth: 0.6, borderColor: "#000000" },
+  trBottom: { borderBottomWidth: 0.75, borderColor: "#000000" },
 
   paragraphLabel: { fontSize: 9, marginTop: 4 },
   paragraphLabelEn: { fontSize: 7, fontStyle: "italic", color: "#a3a3a3" },
