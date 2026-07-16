@@ -254,7 +254,7 @@ export function OrgChartBuilder({
                 disabled={processing}
                 className="text-[12px] font-medium text-blue-600 hover:underline disabled:opacity-60"
               >
-                {processing ? "กำลังประมวลผลรูป..." : "อัปโหลดรูปผังของฉัน"}
+                {processing ? "กำลังประมวลผลรูป..." : "อัพโหลดรูปผังโครงสร้าง"}
               </button>
             </>
           )}
@@ -301,7 +301,7 @@ export function OrgChartBuilder({
       ) : (
         <>
           <p className="no-print mt-0.5 text-[12px] text-neutral-500">
-            ลากไอคอนตำแหน่งจากด้านล่าง มาวางในกรอบ แล้วจัดวางเป็นผังโครงสร้างองค์กรได้อิสระ หรือกด “อัปโหลดรูปผังของฉัน” ด้านบนเพื่อใช้รูปที่คุณวาด/ออกแบบเอง
+            ลากไอคอนตำแหน่งจากด้านล่าง มาวางในกรอบ แล้วจัดวางเป็นผังโครงสร้างองค์กรได้อิสระ หรือกด “อัพโหลดรูปผังโครงสร้าง” ด้านบนเพื่อใช้รูปที่คุณวาด/ออกแบบเอง
           </p>
 
           {/* Canvas frame */}
