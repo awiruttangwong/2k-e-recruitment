@@ -15,6 +15,13 @@
       "when": 1783916952693,
       "tag": "0001_magenta_masked_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1784170450320,
+      "tag": "0002_old_sheva_callister",
+      "breakpoints": true
     }
   ]
 }

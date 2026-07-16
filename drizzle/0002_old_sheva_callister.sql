@@ -1,0 +1,1 @@
+ALTER TABLE `applications` ADD `photo_data_url` text;

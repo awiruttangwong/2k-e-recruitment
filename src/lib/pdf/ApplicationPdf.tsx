@@ -36,7 +36,7 @@ function money(v: number | string | null | undefined): string {
 }
 
 // Full letterhead — flows as ordinary content, so it appears on page 1 only.
-function Header() {
+function Header({ photoDataUrl }: { photoDataUrl?: string }) {
   return (
     <View style={styles.headerRow}>
       {/* eslint-disable-next-line jsx-a11y/alt-text */}
@@ -47,9 +47,16 @@ function Header() {
         <Text style={styles.formTitleTh}>{pad("ใบสมัครงาน")}</Text>
         <Text style={styles.formTitleEn}>{pad("APPLICATION FOR EMPLOYMENT")}</Text>
       </View>
-      <View style={styles.photoBox}>
-        <Text style={styles.photoBoxText}>{pad("ติดรูปถ่าย\n1 นิ้ว")}</Text>
-      </View>
+      {photoDataUrl ? (
+        // The upload pipeline emits exactly the box's 5:7 aspect (300×420), so
+        // this fills the frame without objectFit and cannot distort a face.
+        // eslint-disable-next-line jsx-a11y/alt-text
+        <Image src={photoDataUrl} style={styles.photoBox} />
+      ) : (
+        <View style={styles.photoBox}>
+          <Text style={styles.photoBoxText}>{pad("ติดรูปถ่าย\n1 นิ้ว")}</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -98,7 +105,7 @@ export function ApplicationPdf({ data, orgChart }: { data: ApplicationFormValues
     <Document title="ใบสมัครงาน - 2K Logistics" author="2K Logistics Co., Ltd.">
       <Page size="A4" style={styles.page} wrap>
         <CornerLogo />
-        <Header />
+        <Header photoDataUrl={data.photoDataUrl} />
 
         {/* Name / position / availability */}
         <View style={styles.row}>

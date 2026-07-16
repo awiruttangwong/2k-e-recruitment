@@ -10,6 +10,12 @@ export const applications = sqliteTable("applications", {
     .default("submitted")
     .notNull(),
 
+  // Letterhead photo, as a JPEG data URL the browser already downscaled to
+  // 300×420 (~20-40 KB). Kept inline rather than in R2 because the PDF is
+  // generated client-side straight from form values, so a data URL needs no
+  // fetch, no bucket and no signed-URL story — see src/lib/photo.ts.
+  photoDataUrl: text("photo_data_url"),
+
   // Position applied for
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),

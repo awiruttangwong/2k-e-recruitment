@@ -16,6 +16,20 @@ function optionalNumber(inner: z.ZodNumber) {
   }, inner.optional());
 }
 
+export const PHOTO_MAX_DATA_URL_CHARS = 200_000;
+
+const optionalPhotoDataUrl = z
+  .string()
+  .trim()
+  .optional()
+  .or(z.literal(""))
+  .refine((val) => !val || /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(val), {
+    message: "รูปถ่ายไม่ถูกต้อง",
+  })
+  .refine((val) => !val || val.length <= PHOTO_MAX_DATA_URL_CHARS, {
+    message: "ไฟล์รูปถ่ายใหญ่เกินไป",
+  });
+
 const optionalThaiDate = z
   .string()
   .trim()
@@ -148,6 +162,14 @@ export const referenceSchema = z
   .superRefine(requirePrimaryIfRowTouched("name", "กรุณากรอกชื่อผู้อ้างอิง"));
 
 export const applicationFormSchema = z.object({
+  // Letterhead photo (optional — applicants without one leave the box blank
+  // and attach a printed photo instead). The browser downscales to a 300×420
+  // JPEG before this is ever sent, so anything arriving here that isn't a
+  // small JPEG data URL didn't come from our form: this endpoint is public and
+  // unauthenticated, and without the cap a crafted POST could push megabytes
+  // into the D1 row. 200k chars ≈ 150 KB of JPEG, ~4× the real-world size.
+  photoDataUrl: optionalPhotoDataUrl,
+
   // Position applied for
   firstName: z.string().trim().min(1, "กรุณากรอกชื่อ"),
   lastName: z.string().trim().min(1, "กรุณากรอกนามสกุล"),

@@ -52,12 +52,23 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 space-y-6">
-      <header>
-        <p className="text-sm text-neutral-400">ใบสมัครงาน #{app.id}</p>
-        <h1 className="text-2xl font-bold text-neutral-900">
-          {app.firstName} {app.lastName} {app.nickname ? `(${app.nickname})` : ""}
-        </h1>
-        <p className="text-neutral-600">สมัครตำแหน่ง: {app.positionApplied1}</p>
+      <header className="flex items-start gap-5">
+        <div className="flex-1">
+          <p className="text-sm text-neutral-400">ใบสมัครงาน #{app.id}</p>
+          <h1 className="text-2xl font-bold text-neutral-900">
+            {app.firstName} {app.lastName} {app.nickname ? `(${app.nickname})` : ""}
+          </h1>
+          <p className="text-neutral-600">สมัครตำแหน่ง: {app.positionApplied1}</p>
+        </div>
+        {app.photoDataUrl ? (
+          // Stored 300×420, shown at the 25mm × 35mm box's 5:7 aspect.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={app.photoDataUrl}
+            alt={`รูปถ่าย ${app.firstName} ${app.lastName}`}
+            className="w-[100px] shrink-0 rounded border border-neutral-300"
+          />
+        ) : null}
       </header>
 
       <Card title="ข้อมูลติดต่อ">

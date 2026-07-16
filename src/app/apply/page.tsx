@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { applicationFormSchema, type ApplicationFormValues } from "@/lib/application-schema";
 import { PaperField, PaperTextArea, PaperCheckbox, YesNo, SectionBar, ThaiDateField, formatThaiDate, formatThaiPhone, formatThaiIdCard, formatThaiSalary, isThaiDateInvalid } from "@/components/form/paper-fields";
 import { OrgChartBuilder } from "@/components/form/org-chart-builder";
+import { PhotoUploadBox } from "@/components/form/photo-upload";
 
 // zod v4's optional/default combinations produce an output type that TS's
 // structural checker can't cleanly reconcile with react-hook-form's Resolver
@@ -287,6 +288,9 @@ export default function ApplyPage() {
   return (
     <main className="bg-neutral-200 py-8 print:bg-white print:py-0">
       <div id="application-sheet" className="sheet mx-auto bg-white text-neutral-900 shadow-lg print:shadow-none">
+        {/* FormProvider wraps the letterhead too, not just the <form> — the
+            photo box lives up here but writes photoDataUrl via form context. */}
+        <FormProvider {...formMethods}>
         {/* ── Letterhead: logo left · company/title centered · photo box right ── */}
         <header className="flex items-start gap-4 pb-3">
           <Image
@@ -304,18 +308,11 @@ export default function ApplyPage() {
             <p className="mt-1.5 text-[18px] font-bold leading-snug">ใบสมัครงาน</p>
             <p className="text-[12px] italic tracking-wide text-neutral-700">APPLICATION FOR EMPLOYMENT</p>
           </div>
-          {/* Photo attachment box — true 25mm × 35mm (standard Thai job-application "รูปถ่าย 1 นิ้ว" photo size) */}
-          <div
-            className="flex shrink-0 items-center justify-center border border-neutral-800 text-center text-[9px] leading-tight text-neutral-400"
-            style={{ width: "25mm", height: "35mm" }}
-          >
-            ติดรูปถ่าย
-            <br />
-            1 นิ้ว
-          </div>
+          {/* Photo attachment box — true 25mm × 35mm (standard Thai
+              job-application "รูปถ่าย 1 นิ้ว" photo size) */}
+          <PhotoUploadBox />
         </header>
 
-        <FormProvider {...formMethods}>
         <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="mt-3 space-y-3">
           {/* Name / Nickname */}
           <div className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-[2fr_2fr_1.3fr]">
