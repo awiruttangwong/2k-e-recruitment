@@ -18,6 +18,25 @@ function optionalNumber(inner: z.ZodNumber) {
 
 export const PHOTO_MAX_DATA_URL_CHARS = 200_000;
 
+// An applicant-uploaded org-chart image is downscaled + re-encoded client-side
+// (see lib/org-chart-image.ts) to stay under this. ~1M chars ≈ 730 KB binary —
+// 5× the 1-inch photo's budget, enough for a detailed chart, still a safe D1 row.
+export const ORG_CHART_IMAGE_MAX_DATA_URL_CHARS = 1_000_000;
+
+// PNG (computer-drawn line art) or JPEG (photographic/shaded charts); the client
+// picks whichever keeps the file under the cap. Mirrors optionalPhotoDataUrl.
+const optionalOrgChartImage = z
+  .string()
+  .trim()
+  .optional()
+  .or(z.literal(""))
+  .refine((val) => !val || /^data:image\/(png|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(val), {
+    message: "รูปผังองค์กรไม่ถูกต้อง",
+  })
+  .refine((val) => !val || val.length <= ORG_CHART_IMAGE_MAX_DATA_URL_CHARS, {
+    message: "ไฟล์รูปผังองค์กรใหญ่เกินไป",
+  });
+
 const optionalPhotoDataUrl = z
   .string()
   .trim()
@@ -299,6 +318,9 @@ export const applicationFormSchema = z.object({
   selfIntroduction: optionalText,
 
   orgChartDescription: optionalText,
+  // The applicant's own uploaded chart image, an alternative to the drag-and-drop
+  // builder's vector data (orgChartDescription). Mutually exclusive in the UI.
+  orgChartImageDataUrl: optionalOrgChartImage,
   jobResponsibilities: optionalText,
 
   signatureDataUrl: optionalText,

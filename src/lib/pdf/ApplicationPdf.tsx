@@ -95,13 +95,36 @@ function TableHeader({ cols }: { cols: { label: string; flex: number }[] }) {
   );
 }
 
-export function ApplicationPdf({ data, orgChart }: { data: ApplicationFormValues; orgChart?: OrgChartPayload | null }) {
+export function ApplicationPdf({
+  data,
+  orgChart,
+  orgChartImage,
+}: {
+  data: ApplicationFormValues;
+  orgChart?: OrgChartPayload | null;
+  /** An applicant-uploaded chart image (with aspect = height/width). Takes
+   *  precedence over the drawn vector chart when present. */
+  orgChartImage?: { dataUrl: string; aspect: number } | null;
+}) {
   const education = data.education ?? [];
   const trainings = data.trainings ?? [];
   const workExperience = data.workExperience ?? [];
   const languageSkills = data.languageSkills ?? [];
   const references = data.references ?? [];
-  const hasOrgChart = !!orgChart && orgChart.nodes.length > 0;
+  const hasOrgChartImage = !!orgChartImage && !!orgChartImage.dataUrl;
+  const hasOrgChart = !hasOrgChartImage && !!orgChart && orgChart.nodes.length > 0;
+
+  // Fit the uploaded image full content width, but preserve its aspect and cap
+  // the height so the chart plus the job-responsibilities + certification blocks
+  // below it still fit on one page (react-pdf moves the wrap={false} block to a
+  // fresh page if it doesn't; capping keeps that page from overflowing).
+  const ORG_IMAGE_MAX_H = 450;
+  let orgImgW = CONTENT_WIDTH;
+  let orgImgH = orgChartImage ? CONTENT_WIDTH * orgChartImage.aspect : 0;
+  if (orgImgH > ORG_IMAGE_MAX_H) {
+    orgImgH = ORG_IMAGE_MAX_H;
+    orgImgW = orgChartImage ? ORG_IMAGE_MAX_H / orgChartImage.aspect : CONTENT_WIDTH;
+  }
 
   return (
     <Document title="ใบสมัครงาน - 2K Logistics" author="2K Logistics Co., Ltd.">
@@ -517,7 +540,12 @@ export function ApplicationPdf({ data, orgChart }: { data: ApplicationFormValues
             no longer fits, so it is never split down the middle. */}
         <View style={{ marginTop: 6 }} wrap={false}>
           <Text style={styles.paragraphLabel}>{pad("ผังโครงสร้างองค์กรหรือแผนก (ที่ทำงานล่าสุด)")}</Text>
-          {hasOrgChart ? (
+          {hasOrgChartImage ? (
+            <View style={{ marginTop: 3, alignItems: "center" }}>
+              {/* eslint-disable-next-line jsx-a11y/alt-text */}
+              <Image src={orgChartImage!.dataUrl} style={{ width: orgImgW, height: orgImgH }} />
+            </View>
+          ) : hasOrgChart ? (
             <View style={{ marginTop: 3 }}>
               <OrgChartPdf payload={orgChart!} width={CONTENT_WIDTH} />
             </View>

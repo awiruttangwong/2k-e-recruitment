@@ -165,6 +165,9 @@ export default function ApplyPage() {
   // Vector org-chart data lifted from the builder, used at PDF-generation time
   // so the chart is drawn as crisp SVG rather than a raster snapshot.
   const orgChartPayloadRef = useRef<import("@/lib/pdf/OrgChartPdf").OrgChartPayload | null>(null);
+  // The applicant's uploaded chart image (with its aspect), which takes
+  // precedence over the drawn vector chart when present.
+  const orgChartImageRef = useRef<import("@/components/form/org-chart-builder").OrgChartImage | null>(null);
 
   const heightCmValue = watch("heightCm");
   const weightKgValue = String(watch("weightKg") ?? "");
@@ -233,7 +236,11 @@ export default function ApplyPage() {
       ensurePdfFontsRegistered();
       const values = getValues();
       const blob = await pdf(
-        <ApplicationPdf data={values} orgChart={orgChartPayloadRef.current} />
+        <ApplicationPdf
+          data={values}
+          orgChart={orgChartPayloadRef.current}
+          orgChartImage={orgChartImageRef.current}
+        />
       ).toBlob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -843,6 +850,9 @@ export default function ApplyPage() {
             className="mt-8"
             onPayloadChange={(payload) => {
               orgChartPayloadRef.current = payload;
+            }}
+            onImageChange={(image) => {
+              orgChartImageRef.current = image;
             }}
           />
           <PaperTextArea th="จงอธิบายหน้าที่รับผิดชอบโดยละเอียด (ที่ทำงานล่าสุด)" rows={6} className="mt-4" {...register("jobResponsibilities")} />

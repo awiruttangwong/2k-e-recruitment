@@ -120,6 +120,7 @@ export const applications = sqliteTable("applications", {
   selfIntroduction: text("self_introduction"),
 
   orgChartDescription: text("org_chart_description"),
+  orgChartImageDataUrl: text("org_chart_image_data_url"),
   jobResponsibilities: text("job_responsibilities"),
 
   signatureDataUrl: text("signature_data_url"),

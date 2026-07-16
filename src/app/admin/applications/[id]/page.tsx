@@ -150,6 +150,18 @@ export default async function ApplicationDetailPage({ params }: { params: Promis
           <p className="text-sm text-neutral-700 whitespace-pre-wrap">{app.selfIntroduction}</p>
         </Card>
       ) : null}
+
+      {app.orgChartImageDataUrl ? (
+        <Card title="ผังโครงสร้างองค์กร (รูปที่อัปโหลด)">
+          {/* Applicant-supplied chart image, shown full width at its own aspect. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={app.orgChartImageDataUrl}
+            alt="ผังโครงสร้างองค์กรที่ผู้สมัครอัปโหลด"
+            className="w-full rounded border border-neutral-300"
+          />
+        </Card>
+      ) : null}
     </main>
   );
 }

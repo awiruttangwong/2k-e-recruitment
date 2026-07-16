@@ -22,6 +22,13 @@
       "when": 1784170450320,
       "tag": "0002_old_sheva_callister",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1784197083072,
+      "tag": "0003_wealthy_mister_sinister",
+      "breakpoints": true
     }
   ]
 }

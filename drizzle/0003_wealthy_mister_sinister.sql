@@ -1,0 +1,1 @@
+ALTER TABLE `applications` ADD `org_chart_image_data_url` text;
