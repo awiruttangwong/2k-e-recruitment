@@ -228,12 +228,15 @@ export default function ApplyPage() {
     setGeneratingPdf(true);
     setServerError(null);
     try {
-      const [{ pdf }, { ApplicationPdf }, { ensurePdfFontsRegistered }] = await Promise.all([
+      const [{ pdf }, { ApplicationPdf }, { loadPdfFonts }] = await Promise.all([
         import("@react-pdf/renderer"),
         import("@/lib/pdf/ApplicationPdf"),
         import("@/lib/pdf/fonts"),
       ]);
-      ensurePdfFontsRegistered();
+      // Wait for every Thai font variant to finish fetching + parsing BEFORE
+      // rendering, so the layout never falls back to wrong glyph metrics on
+      // slower mobile devices (the "PDF จากมือถือดูแปลก" bug). See loadPdfFonts.
+      await loadPdfFonts();
       const values = getValues();
       const blob = await pdf(
         <ApplicationPdf
@@ -245,6 +248,13 @@ export default function ApplyPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
+      // iOS Safari ignores the `download` attribute; without a target it would
+      // navigate the current tab away from the half-filled form. target=_blank
+      // makes those browsers open the generated PDF in its own tab (viewable +
+      // shareable/saveable), while desktop browsers that honour `download` still
+      // save straight to disk and ignore the target.
+      a.target = "_blank";
+      a.rel = "noopener";
       // Once ชื่อ/นามสกุล/ตำแหน่งที่ต้องการ are all filled in, name the file
       // after the applicant instead of the generic default — makes multiple
       // downloaded applications easy to tell apart in a folder.
@@ -259,7 +269,11 @@ export default function ApplyPage() {
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(url);
+      // Mobile browsers hand the download off asynchronously — revoking the blob
+      // URL synchronously here (as before) can cut the file off mid-read and
+      // yield a blank/garbled PDF, which is exactly the "PDF จากมือถือดูแปลก"
+      // report. Defer the revoke so the browser finishes reading the blob first.
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch {
       setServerError("ไม่สามารถสร้างไฟล์ PDF ได้ กรุณาลองใหม่อีกครั้ง");
     } finally {

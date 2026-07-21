@@ -121,7 +121,10 @@ export function PaperField({ th, en, error, suffix, className, required: _requir
   return (
     <div className={className}>
       <label className="flex items-baseline gap-x-1.5">
-        <span className="shrink-0 whitespace-nowrap text-[15px]">{th}</span>
+        {/* min-w-0 (not shrink-0/whitespace-nowrap) lets a very long label wrap
+            and shrink instead of forcing horizontal page scroll on small phones
+            like the 320px iPhone SE; short labels still fit on one line. */}
+        <span className="min-w-0 text-[15px]">{th}</span>
         <input
           className={`${lineInputBase} ${borderStyle(error)}`}
           onChange={
@@ -195,15 +198,45 @@ type PaperTextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   rows?: number;
 };
 
-export function PaperTextArea({ th, en, className, rows = 3, ...rest }: PaperTextAreaProps) {
+/** Grow a textarea to fit its content, never below the height its `rows`
+ *  attribute gave it on first mount (cached on the element's own dataset, so no
+ *  React-scope mutation — keeps the React Compiler happy and matches the
+ *  auto-growing table cells in apply/page.tsx). */
+function autoGrowPaperTextarea(el: HTMLTextAreaElement | null) {
+  if (!el) return;
+  if (!el.dataset.minHeight) el.dataset.minHeight = String(el.offsetHeight);
+  el.style.height = "auto";
+  // With box-sizing:border-box the height we set INCLUDES the border, but
+  // scrollHeight does NOT — so add the top+bottom border back or the last line
+  // gets clipped by ~2px. (The table-cell inputs are border-0 and don't need
+  // this.) minHeight is stored as offsetHeight so it's in the same units.
+  const borderY = el.offsetHeight - el.clientHeight;
+  el.style.height = `${Math.max(el.scrollHeight + borderY, Number(el.dataset.minHeight))}px`;
+}
+
+export function PaperTextArea({ th, en, className, rows = 3, onChange, ...rest }: PaperTextAreaProps) {
+  // react-hook-form's register() passes its ref via {...rest} (React 19 exposes
+  // it as a normal prop) and it is always a callback ref; compose it with ours
+  // so both RHF and the auto-grow measurement get the element.
+  const { ref: rhfRef, ...textareaRest } = rest as typeof rest & {
+    ref?: (el: HTMLTextAreaElement | null) => void;
+  };
   return (
     <div className={className}>
       <span className="text-[15px]">{th}</span>
       {en ? <span className="ml-1.5 text-[10px] italic text-neutral-400">{en}</span> : null}
       <textarea
-        className="mt-1 w-full resize-none border border-dotted border-neutral-400 bg-transparent px-2 py-1.5 text-[15px] leading-relaxed focus:border-solid focus:border-blue-600 focus:outline-none"
+        className="mt-1 w-full resize-none overflow-hidden border border-dotted border-neutral-400 bg-transparent px-2 py-1.5 text-[15px] leading-relaxed focus:border-solid focus:border-blue-600 focus:outline-none"
         rows={rows}
-        {...rest}
+        ref={(el) => {
+          rhfRef?.(el);
+          autoGrowPaperTextarea(el);
+        }}
+        onChange={(e) => {
+          autoGrowPaperTextarea(e.target);
+          onChange?.(e);
+        }}
+        {...textareaRest}
       />
     </div>
   );
